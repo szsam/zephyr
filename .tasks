@@ -1,0 +1,19 @@
+# Build wllvm for zephyr sample projects
+# First source the python venv (e.g. . /home/smj/purs3/zephyrproject/.venv2/bin/activate)
+
+[+]
+LLVM_DIR=/usr/lib/llvm-14
+ARM_NONE_EABI_TOOLCHAIN_PATH=/home/smj/purs3/zephyrproject/zephyr-sdk-0.15.1/arm-zephyr-eabi
+BOARD=nrf52832_mdk
+APP_SRC_DIR=samples/basic/blinky
+APP_NAME=`basename $(+APP_SRC_DIR)`
+BUILD_DIR=build/$(+BOARD)/$(+APP_NAME)
+FIRMWARE_ELF=$(+BUILD_DIR)/zephyr/zephyr.elf
+
+[project-build]
+command=export WLLVM_OUTPUT_LEVEL=INFO LLVM_COMPILER_PATH=$(+LLVM_DIR)/bin BINUTILS_TARGET_PREFIX=$(+ARM_NONE_EABI_TOOLCHAIN_PATH)/bin/arm-zephyr-eabi && LLVM_COMPILER=hybrid LLVM_BITCODE_GENERATION_FLAGS='-target arm-none-eabi -fno-inline' west build -b $(+BOARD) -d $(+BUILD_DIR) $(+APP_SRC_DIR) -- -DUSE_CCACHE=0 && for elf in $(+FIRMWARE_ELF); do extract-bc $elf && $(+LLVM_DIR)/bin/llvm-dis $elf.bc; done
+cwd=<root>
+errorformat=%f:%l:%m
+#output=terminal
+#pos=bottom
+save=2
